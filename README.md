@@ -10,6 +10,10 @@ nod. That's most of what I am: a steady hand that drives work all the way to
 proven-done, or stops early and tells you exactly why. No bluffing, no
 "looks done to me."
 
+> **Pairs with [Council](https://github.com/Zuxas/council), the board.** When a
+> call is contested or irreversible, I take it to the Council -- independent seats
+> that argue from evidence and hand back a verdict. I execute; they review; you ratify.
+
 ## What I do
 
 You hand me a task -- a document you point me at, or a goal you describe in
@@ -125,6 +129,11 @@ needs shaping, a council when a call is contested. The more you keep in the shed
 the more I'll reach for. None of them are required; all of them make me sharper.
 I stand on my own, and I wield whatever's there.
 
+One tool I bring in the box: a small **`handoff`** skill (in `skills/handoff/`).
+Any agent -- me, or a different model entirely -- can use it to write up a
+workload with full context, and then you point me at that doc to build it. It's
+how a job gets handed cleanly from one set of hands to the next.
+
 ## How to use me
 
 I've got two doors in, and they lead to the same hallway:
@@ -165,6 +174,25 @@ past the immediate task, I stop and lay out the stakes before I do it -- I never
 spend your trust without checking first. You point the direction; I do the
 driving; and I always pull over before a cliff.
 
+## Tuning me
+
+You steer most of me from one file -- no code:
+
+- **`.bob-convention.md`** in your project root (copy it from
+  `CONVENTION-TEMPLATE.md`): your hot zones, what to redact, where my scratch
+  (`bob-runs/`) goes, and which of your skills I should reach for first. This is
+  the front panel; edit it and I follow it.
+- A few deeper knobs live in the machinery, for tinkerers:
+  - the **goal-mode veto window** -- how long I wait before a low-stakes goal
+    auto-Goes (set it to zero for hands-off on safe work; never on hot zones);
+  - **claim staleness** (default 90 min) and the **human-gate timeout** (default
+    20 min), in `scripts/bob_run.py` and `references/timeout-gate.md`;
+  - the **fan-out cap** (default 20 workers), in `SKILL.md`.
+
+Change the convention file for everyday tuning; touch the machinery only if you
+want to reshape how I work. Either way, I never enter a hot zone or push without
+you -- no knob changes that.
+
 ## Install
 
 I'm a Claude skill. Clone me straight into where Claude looks for skills:
@@ -190,5 +218,28 @@ cd ~/.claude/skills/bob/scripts && pytest
 Green across the board means the machinery underneath me is working. After that,
 just type `/bob` and point me at a job.
 
+I also ship a companion **`handoff`** skill in `skills/handoff/`. Copy it next to
+me so any agent can spec a workload I'll pick up:
+
+```text
+cp -r ~/.claude/skills/bob/skills/handoff ~/.claude/skills/handoff   # macOS/Linux
+```
+
+Then any agent writes a `/handoff` doc and you hand it to me with `/bob path/to/handoff.md`.
+
 That's me. I build when the build is right, and I down tools when it isn't. Nice
 to meet you.
+
+## Credits & homage
+
+Bob's my own spin on ideas from people whose work I genuinely love. **Matt
+Pocock** ([@mattpocock](https://github.com/mattpocock)) -- his handoff skill and
+his AI-engineering thinking shaped how I carry context between agents; the little
+`handoff` skill in this repo is my own clean-room take on that idea. The verify
+loop owes a debt to the broader multi-agent / blind-council / LLM-as-judge lineage
+too. I used their work, loved it, and tweaked it to fit my own workflow. Changed a
+few things for my use case; if any of it's useful to you, that's the whole point.
+Take it, make it yours. :]
+
+Pairs with **[Council](https://github.com/Zuxas/council)**, the board I consult at
+my gates.
