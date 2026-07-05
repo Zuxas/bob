@@ -135,6 +135,26 @@ I've got two doors in, and they lead to the same hallway:
   I'll draft the definition of done myself, then show it to you before I build a
   thing.
 
+Principles are nice, but you need the actual keys. Here they are:
+
+```text
+# Door 1 -- point me at a file (a spec, plan, handoff, or loose note):
+/bob path/to/your-task.md
+
+# Door 2 -- hand me the goal in plain words (put it in quotes):
+/bob "your goal, described in a sentence"
+
+# While I'm running, steer me by writing ONE line into the run's
+# control file, bob-runs/<runid>/control.md -- I read it at every checkpoint:
+!pause                        # hold the crew where they stand
+!redirect agent-02 <note>     # re-aim one worker with a fresh instruction
+!kill agent-03                # pull one worker off the line
+!stop                         # halt everything; I'll leave you a handoff
+```
+
+That's the whole control surface: a path or a sentence to start me, and four
+plain lines to steer me. No flags to memorize.
+
 **What "done" means to me** is never "I think it's fine." It's a checkable bar,
 written down before the work starts, backed at the end by evidence from someone
 other than the worker who did it. If I can't clear that bar honestly, the job
@@ -147,22 +167,28 @@ driving; and I always pull over before a cliff.
 
 ## Install
 
-I'm a Claude skill. Drop my folder where Claude looks for skills:
+I'm a Claude skill. Clone me straight into where Claude looks for skills:
 
-- Global, for everything you do: copy this folder to `~/.claude/skills/bob`
-- Per-project, for one repo: copy it to that project's `.claude/skills/bob`
+```text
+# Global -- available in every project:
+git clone https://github.com/Zuxas/bob.git ~/.claude/skills/bob
+
+# Or per-project -- just one repo (run from that repo's root):
+git clone https://github.com/Zuxas/bob.git .claude/skills/bob
+```
 
 I lean on **python** for the deterministic bookkeeping (claims, run directories,
 the branch guard, the decision log) -- so you'll want python available.
 
-To check that I'm sound before you rely on me, run my tests:
+To check that I'm sound before you rely on me, run my tests from my `scripts/`
+folder:
 
-```
-pytest
+```text
+cd ~/.claude/skills/bob/scripts && pytest
 ```
 
-from my `scripts/` folder. Green across the board means the machinery underneath
-me is working. After that, just type `/bob` and point me at a job.
+Green across the board means the machinery underneath me is working. After that,
+just type `/bob` and point me at a job.
 
 That's me. I build when the build is right, and I down tools when it isn't. Nice
 to meet you.
