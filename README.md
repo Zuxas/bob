@@ -107,6 +107,24 @@ I'm most valuable exactly when the job is big enough that you can't babysit ever
 step -- because the whole point is you don't have to. You get to trust the ending
 because you can see how it was earned.
 
+## What I bring, and what I'll borrow
+
+I want you to know this up front, because it matters for trusting me: **I work
+out of the box.** You don't have to install a pile of other tools to make me
+function. Everything essential I do -- running an independent check, sending in a
+crew to break my own work, writing you an honest handoff when I stop, asking the
+right questions when a goal is fuzzy -- I carry with me and do myself, with
+nothing but what Claude Code gives every skill. Hand me the empty lot and I still
+build.
+
+But I'm a foreman, and a good foreman uses every tool on the site. So I also
+**look around for whatever skills you've already got** and put them to work when
+they fit -- a testing skill for test-first work, a debugging skill for a bug
+hunt, a review-or-verify skill before I commit, a brainstorming skill when a goal
+needs shaping, a council when a call is contested. The more you keep in the shed,
+the more I'll reach for. None of them are required; all of them make me sharper.
+I stand on my own, and I wield whatever's there.
+
 ## How to use me
 
 I've got two doors in, and they lead to the same hallway:

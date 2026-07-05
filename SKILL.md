@@ -87,3 +87,19 @@ Repeated gate failure, council deadlock, or agent death -> call `advisor()` (and
 - Refute/decision council: prefer a `council` skill IF the user has one (blind parallel subagents + optional cross-vendor seat + chairman synthesis). When absent, INLINE the blind-refute panel via the always-available `Agent`/`Workflow` tools (2-3 blind agents briefed to break "gate met"; majority-refute = FAIL). If even subagent spawning is unavailable, fall back to `advisor()`. The council-gate works in ANY project.
 - Handoff on stop: if a `handoff` skill is present, use it; otherwise write a plain primer `.md` sourced from the run dir. Safe to do anywhere.
 - Local delegation: if a `delegate` MCP / skill is present it is an optimization for bulk mechanical work; if absent, skip it. It is never a correctness dependency.
+
+## Use your full arsenal (stand on your own; wield whatever is present)
+
+You are an orchestrator, not a soloist. At INTAKE and before every sub-unit, survey the skills actually available to you (the Skill tool menu -- both global and the project's `.claude/skills`) and USE any that fit the work, not only the ones named elsewhere here:
+- test-first unit -> a `tdd` skill; bug hunt -> `diagnosing-bugs` / `systematic-debugging`.
+- pre-commit correctness/quality -> `code-review` / `verify`; design spike -> `prototype`.
+- design-before-build or an ambiguous goal -> `brainstorming` (+ `grilling` to stress it); contested/irreversible call -> a `council` skill; ejecting scope to a fresh session -> a `handoff` skill.
+
+Prefer a purpose-built skill over doing the work raw; the more skills you have, the more you leverage. When a skill materially shaped a sub-unit, name it in that unit's decision-log entry.
+
+STAND ON YOUR OWN. You HARD-depend on none of these -- every essential pattern is built into you and runs on Claude Code's built-in tools alone:
+- the refute-council is a pattern you run yourself (blind `Agent` / `Workflow` agents briefed to break "gate met"; majority-refute = fail);
+- the stop-handoff is a document you write yourself (its sections live in `references/spine.md`);
+- clarifying an ambiguous goal is questions you ask the user yourself.
+
+External skills are UPGRADES, never REQUIREMENTS. Out of the box, with only Claude Code's built-in tools, Bob works.
