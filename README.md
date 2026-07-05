@@ -230,16 +230,10 @@ Then any agent writes a `/handoff` doc and you hand it to me with `/bob path/to/
 That's me. I build when the build is right, and I down tools when it isn't. Nice
 to meet you.
 
-## Credits & homage
+## Credits
 
-Bob's my own spin on ideas from people whose work I genuinely love. **Matt
-Pocock** ([@mattpocock](https://github.com/mattpocock)) -- his handoff skill and
-his AI-engineering thinking shaped how I carry context between agents; the little
-`handoff` skill in this repo is my own clean-room take on that idea. The verify
-loop owes a debt to the broader multi-agent / blind-council / LLM-as-judge lineage
-too. I used their work, loved it, and tweaked it to fit my own workflow. Changed a
-few things for my use case; if any of it's useful to you, that's the whole point.
-Take it, make it yours. :]
+Bob's `handoff` skill is a clean-room take on **Matt Pocock**'s
+([@mattpocock](https://github.com/mattpocock)) handoff work -- tweaked for my own
+workflow. Useful to you too? Take it and make it yours. :]
 
-Pairs with **[Council](https://github.com/Zuxas/council)**, the board I consult at
-my gates.
+Pairs with **[Council](https://github.com/Zuxas/council)**.
