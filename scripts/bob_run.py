@@ -11,6 +11,7 @@ import json
 import time
 import argparse
 import subprocess
+from contextlib import contextmanager
 from pathlib import Path
 
 
@@ -38,8 +39,70 @@ def init_run(base_dir, doc_path):
 
 # --- claim / lockfile --------------------------------------------------------
 
+LOCK_TIMEOUT_S = 10.0
+
+
+@contextmanager
+def file_lock(lock_path, timeout_s=LOCK_TIMEOUT_S):
+    """Hold an exclusive cross-process lock on `lock_path` for the `with` body.
+
+    OS advisory lock (fcntl.flock on POSIX, msvcrt.locking on Windows): the kernel
+    drops it if the holder dies, so a crash can never leave a stale lock behind. Keep
+    the body short. The lock file is created if missing and never deleted (deleting
+    it would let two processes lock two different inodes).
+    Raises TimeoutError if not acquired within `timeout_s`.
+    Reusable by any helper that needs a read-check-write to be atomic (e.g. #2's
+    control.md acknowledgements).
+    """
+    fd = os.open(str(lock_path), os.O_RDWR | os.O_CREAT, 0o644)
+    deadline = time.monotonic() + timeout_s
+    try:
+        while True:
+            try:
+                if os.name == "nt":
+                    import msvcrt
+                    os.lseek(fd, 0, os.SEEK_SET)
+                    msvcrt.locking(fd, msvcrt.LK_NBLCK, 1)
+                else:
+                    import fcntl
+                    fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                break
+            except OSError:
+                if time.monotonic() >= deadline:
+                    raise TimeoutError(f"could not lock {lock_path} within {timeout_s}s")
+                time.sleep(0.005)
+        try:
+            yield
+        finally:
+            if os.name == "nt":
+                import msvcrt
+                os.lseek(fd, 0, os.SEEK_SET)
+                msvcrt.locking(fd, msvcrt.LK_UNLCK, 1)
+            else:
+                import fcntl
+                fcntl.flock(fd, fcntl.LOCK_UN)
+    finally:
+        os.close(fd)
+
+
+def atomic_write_text(path, text):
+    """Replace `path` with `text` so readers see the old file or the new one, never a
+    partial write (temp file in the same directory + os.replace)."""
+    path = Path(path)
+    tmp = path.with_name(f".{path.name}.{os.getpid()}.{time.monotonic_ns()}.tmp")
+    try:
+        tmp.write_text(text, encoding="utf-8")
+        os.replace(tmp, path)
+    finally:
+        tmp.unlink(missing_ok=True)
+
+
 def _claim_path(doc_path):
     return Path(str(doc_path) + ".bobclaim")
+
+
+def _claim_lock_path(doc_path):
+    return Path(str(doc_path) + ".bobclaim.lock")
 
 
 def check_claim(doc_path, ttl_min=90):
@@ -56,23 +119,40 @@ def check_claim(doc_path, ttl_min=90):
     return data
 
 
+def try_claim(doc_path, runid, ttl_min=90):
+    """Atomically claim the doc iff no LIVE claim exists.
+
+    Returns (True, our_claim) on success, or (False, holder) where `holder` is the live
+    claim that won. The check and the write happen under one cross-process lock, so two
+    concurrent claimants can never both succeed, and reclaiming a stale claim is the
+    same locked operation (whoever gets the lock first takes it; the next sees it live).
+    """
+    with file_lock(_claim_lock_path(doc_path)):
+        live = check_claim(doc_path, ttl_min)
+        if live is not None:
+            return False, live
+        mine = {"runid": runid, "pid": os.getpid(), "ts": time.time()}
+        atomic_write_text(_claim_path(doc_path), json.dumps(mine))
+        return True, mine
+
+
 def claim(doc_path, runid, ttl_min=90):
     """Claim the doc iff no LIVE claim exists. Returns True on success."""
-    if check_claim(doc_path, ttl_min) is not None:
-        return False
-    _claim_path(doc_path).write_text(
-        json.dumps({"runid": runid, "pid": os.getpid(), "ts": time.time()}),
-        encoding="utf-8")
-    return True
+    return try_claim(doc_path, runid, ttl_min)[0]
 
 
 def release(doc_path, runid):
-    """Release the claim iff it belongs to runid (ignoring staleness)."""
-    data = check_claim(doc_path, ttl_min=10 ** 9)
-    if not data or data.get("runid") != runid:
-        return False
-    _claim_path(doc_path).unlink(missing_ok=True)
-    return True
+    """Release the claim iff it belongs to runid (ignoring staleness).
+
+    Locked, so a run whose stale claim was just reclaimed by another run can never
+    delete the new owner's claim: it re-reads under the lock and sees a different runid.
+    """
+    with file_lock(_claim_lock_path(doc_path)):
+        data = check_claim(doc_path, ttl_min=10 ** 9)
+        if not data or data.get("runid") != runid:
+            return False
+        _claim_path(doc_path).unlink(missing_ok=True)
+        return True
 
 
 # --- control channel + decision log -----------------------------------------
@@ -185,7 +265,9 @@ def _main():
     if a.cmd == "init":
         print(init_run(a.base, a.doc))
     elif a.cmd == "claim":
-        print("OK" if claim(a.doc, a.runid) else "REFUSED")
+        ok, holder = try_claim(a.doc, a.runid)
+        # "REFUSED" stays the first token for existing callers; the live holder follows.
+        print("OK" if ok else "REFUSED " + json.dumps(holder))
     elif a.cmd == "check-claim":
         print(json.dumps(check_claim(a.doc)))
     elif a.cmd == "release":
